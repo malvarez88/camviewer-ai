@@ -17,6 +17,7 @@ export function drawOnCanvas(
         : ctx.roundRect(x, y, width, height, 8);
       ctx.fill();
       ctx.font = "12px Courier New";
+      ctx.fillStyle = "black";
       ctx.globalAlpha = 1;
       mirrored
         ? ctx.fillText(name, ctx.canvas.width - x - width + 10, y + 20)

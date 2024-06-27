@@ -17,6 +17,10 @@ import {
   FlipHorizontal,
   MoonIcon,
   PersonStanding,
+  Power,
+  PowerOff,
+  ShieldMinus,
+  ShieldPlus,
   SunIcon,
   Video,
   Volume2,
@@ -32,23 +36,76 @@ import { drawOnCanvas } from "@/utils/draw";
 type Props = {};
 
 let interval: any = null;
+let stopTimeout: any = null;
 
 const HomePage = (props: Props) => {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [mirrored, setMirrored] = useState<boolean>(true);
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [autoRecordEnabled, setAutoRecordEnabled] = useState<boolean>(false);
   const [volume, setVolume] = useState(0.8);
   const [model, setModel] = useState<ObjectDetection>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [isVideoShown, setIsVideoShown] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (webcamRef && webcamRef.current) {
+      const stream = (webcamRef.current.video as any).captureStream();
+      if (stream) {
+        // https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        mediaRecorderRef.current.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            const recordedBlob = new Blob([e.data], {
+              type: "video",
+            });
+            const videoUrl = URL.createObjectURL(recordedBlob);
+            const a = document.createElement("a");
+            a.href = videoUrl;
+            a.download = `${formatDate(new Date())}.webm`;
+            a.click();
+          }
+        };
+        mediaRecorderRef.current.onstart = (e) => {
+          setIsRecording(true);
+        };
+        mediaRecorderRef.current.onstop = (e) => {
+          setIsRecording(false);
+        };
+      }
+    }
+  }, [webcamRef]); //to know if webcam is available before we record anything
 
   function userPromptScreenshot(event: any) {
     throw new Error("Function not implemented.");
   }
 
-  function userPromptRecord(event: any) {
-    throw new Error("Function not implemented.");
+  function userPromptRecord() {
+    if (!webcamRef.current) {
+      toast("Camera not found. Please refresh.");
+    }
+    if (mediaRecorderRef.current?.state === "recording") {
+      mediaRecorderRef.current.requestData();
+      mediaRecorderRef.current.stop();
+      toast("Recording saved to downloads folder");
+    } else {
+      startRecording(false);
+    }
+  }
+
+  function startRecording(sound: boolean) {
+    if (webcamRef.current && mediaRecorderRef.current?.state !== "recording") {
+      mediaRecorderRef.current?.start();
+      sound && beep(volume);
+      stopTimeout = setTimeout(() => {
+        if (mediaRecorderRef.current?.state === "recording") {
+          mediaRecorderRef.current.requestData();
+          mediaRecorderRef.current.stop();
+        }
+      }, 30000); //will record for 30 seconds after person detection.
+    }
   }
 
   function toggleAutoRecord(event: any) {
@@ -107,6 +164,15 @@ const HomePage = (props: Props) => {
       // }]
       resizeCanvas(canvasRef, webcamRef);
       drawOnCanvas(mirrored, predictions, canvasRef.current?.getContext("2d"));
+      let isPerson: boolean = false;
+      if (predictions.length > 0) {
+        predictions.forEach((pred) => {
+          isPerson = pred.class === "person";
+        });
+        if (isPerson && autoRecordEnabled) {
+          startRecording(true);
+        }
+      }
     }
   }
 
@@ -116,26 +182,39 @@ const HomePage = (props: Props) => {
     }, 100); //time for every prediction
 
     return () => clearInterval(interval); //we clear interval so if the useEffect is called multiple times, we have only one prediction left. If not we will have multiple predictions.
-  }, [webcamRef.current, model, mirrored]); //eslint-disable-line
+  }, [webcamRef.current, model, mirrored, autoRecordEnabled]); //eslint-disable-line
 
   return (
     <div className="flex h-screen">
       {/* left - webcam */}
-      <div className="relative">
-        <div className="relative h-screen w-full">
-          <Webcam
-            ref={webcamRef}
-            mirrored={mirrored}
-            className="h-full w-full object-contain p-2"
-          />
-          <canvas
-            ref={canvasRef}
-            className="absolute top-0 left-0 h-full w-full object-contain"
-          ></canvas>
-        </div>
+      <div className="relative flex-1">
+        {isVideoShown ? (
+          <div className="relative h-screen w-full">
+            <Webcam
+              ref={webcamRef}
+              mirrored={mirrored}
+              className="h-full w-full object-contain p-2"
+            />
+            <canvas
+              ref={canvasRef}
+              className="absolute top-0 left-0 h-full w-full object-contain"
+            ></canvas>
+          </div>
+        ) : (
+          <div className="relative">
+            <div className="w-full h-screen flex items-center justify-center gap-4 flex-col">
+              <p className="text-sm text-foreground">Enable camera to start</p>
+              <Power
+                size={24}
+                className="cursor-pointer"
+                onClick={() => setIsVideoShown(true)}
+              />
+            </div>
+          </div>
+        )}
       </div>
       {/* right - buttons */}
-      <div className="flex flex-row flex-1">
+      <div className="flex flex-row ">
         <div className="border-primary/5 border-2 max-w-xs flex flex-col gap-2 justify-between shadow-md rounded-md p-4">
           {/* top */}
           <div className="flex flex-col gap-2">
@@ -156,7 +235,7 @@ const HomePage = (props: Props) => {
           <div className="flex flex-col gap-2">
             <Separator className="my-2" />
             <Button
-              variant={isRecording ? "destructive" : "outline"}
+              variant={"outline"}
               onClick={userPromptScreenshot}
               size={"icon"}
             >
@@ -185,6 +264,21 @@ const HomePage = (props: Props) => {
 
           {/* bottom */}
           <div className="flex flex-col gap-2">
+            <Button variant={"outline"} size={"icon"}>
+              {isVideoShown ? (
+                <PowerOff
+                  size={24}
+                  className="cursor-pointer"
+                  onClick={() => setIsVideoShown((prev) => !prev)}
+                />
+              ) : (
+                <Power
+                  size={24}
+                  className="cursor-pointer"
+                  onClick={() => setIsVideoShown((prev) => !prev)}
+                />
+              )}
+            </Button>
             <Separator className="my-2" />
             <Popover>
               <PopoverTrigger asChild>
@@ -322,7 +416,7 @@ const HomePage = (props: Props) => {
 
 export default HomePage;
 
-//standalone function to set canvas size
+//standalone functions
 function resizeCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
   webcamRef: React.RefObject<Webcam>
@@ -335,4 +429,20 @@ function resizeCanvas(
     canvas.width = videoWidth;
     canvas.height = videoHeight;
   }
+}
+
+function formatDate(d: Date) {
+  const formattedDate =
+    [
+      (d.getMonth() + 1).toString().padStart(2, "0"),
+      d.getDate().toString().padStart(2, "0"),
+      d.getFullYear(),
+    ].join("-") +
+    " " +
+    [
+      d.getHours().toString().padStart(2, "0"),
+      d.getMinutes().toString().padStart(2, "0"),
+      d.getSeconds().toString().padStart(2, "0"),
+    ].join("-");
+  return formattedDate;
 }
