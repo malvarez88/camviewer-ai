@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# CamViewer.ai
 
-## Getting Started
+CamViewer.ai is a web application built with Next.js, TypeScript, and Tailwind CSS that allows users to interact with their computer's camera and utilize AI to detect and identify elements on the screen. The application highlights detected persons in red and other objects (like chairs, dogs, etc.) in green using a canvas overlay. 
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **AI Detection**: Utilizes models from [TensorFlow](https://www.tensorflow.org) to detect persons and other elements.
+- **Dynamic Styling**: Styled using [Shadecn](https://ui.shadcn.com/) for a modern and responsive design.
+- **Iconography**: Icons provided by [Radix Icons](https://www.radix-ui.com/icons) and [Lucide Icons](https://lucide.dev/icons).
+- **Recording**: Ability to record video and take screenshots.
+- **Auto-Record**: Automatically starts recording when a person is detected.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can use either `yarn` or `npm` to install and run the project.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Using Yarn
 
-## Learn More
+1. Clone the repository:
+    ```sh
+    git clone https://github.com/malvarez88/camviewer-ai.git
+    ```
+2. Navigate to the project directory:
+    ```sh
+    cd camviewer-ai
+    ```
+3. Install the dependencies:
+    ```sh
+    yarn install
+    ```
+4. Start the development server:
+    ```sh
+    yarn dev
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+### Using npm
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Clone the repository:
+    ```sh
+    git clone https://github.com/malvarez88/camviewer-ai.git
+    ```
+2. Navigate to the project directory:
+    ```sh
+    cd camviewer-ai
+    ```
+3. Install the dependencies:
+    ```sh
+    npm install
+    ```
+4. Start the development server:
+    ```sh
+    npm run dev
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Usage
 
-## Deploy on Vercel
+1. Open your browser and navigate to `http://localhost:3000`.
+2. Allow camera access when prompted.
+3. Use the interface to start detecting elements, recording videos, and taking screenshots.
+4. Enable auto-record to start recording automatically when a person is detected.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Dependencies
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- [Next.js](https://nextjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [TensorFlow](https://www.tensorflow.org)
+- [ShadecnUI](https://ui.shadcn.com/)
+- [Radix Icons](https://www.radix-ui.com/icons)
+- [Lucide Icons](https://lucide.dev/icons)
+
+## Contribution
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/your-feature`).
+3. Commit your changes (`git commit -m 'Add some feature'`).
+4. Push to the branch (`git push origin feature/your-feature`).
+5. Open a pull request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
