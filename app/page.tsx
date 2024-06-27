@@ -26,9 +26,12 @@ import { beep } from "@/utils/beep";
 import * as cocossd from "@tensorflow-models/coco-ssd";
 import "@tensorflow/tfjs-backend-cpu";
 import "@tensorflow/tfjs-backend-webgl";
-import { ObjectDetection } from "@tensorflow-models/coco-ssd";
+import { DetectedObject, ObjectDetection } from "@tensorflow-models/coco-ssd";
+import { drawOnCanvas } from "@/utils/draw";
 
 type Props = {};
+
+let interval: any = null;
 
 const HomePage = (props: Props) => {
   const webcamRef = useRef<Webcam>(null);
@@ -38,6 +41,7 @@ const HomePage = (props: Props) => {
   const [autoRecordEnabled, setAutoRecordEnabled] = useState<boolean>(false);
   const [volume, setVolume] = useState(0.8);
   const [model, setModel] = useState<ObjectDetection>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   function userPromptScreenshot(event: any) {
     throw new Error("Function not implemented.");
@@ -62,6 +66,7 @@ const HomePage = (props: Props) => {
   }
 
   useEffect(() => {
+    setLoading(true);
     initModel();
   }, []);
 
@@ -72,6 +77,46 @@ const HomePage = (props: Props) => {
     });
     setModel(loadModel);
   }
+
+  useEffect(() => {
+    if (model) {
+      setLoading(false);
+    }
+  }, [model]);
+
+  async function runPrediction() {
+    if (
+      model &&
+      webcamRef.current &&
+      webcamRef.current.video &&
+      webcamRef.current.video.readyState === 4
+      // HAVE_ENOUGH_DATA	4	Enough data is available—and the download rate is high enough—that the media can be played through to the end without interruption.
+    ) {
+      const predictions: DetectedObject[] = await model.detect(
+        webcamRef.current.video
+      );
+      // Returns an array of classes and probabilities that looks like:
+      // [{
+      //   bbox: [x, y, width, height],
+      //   class: "person",
+      //   score: 0.8380282521247864
+      // }, {
+      //   bbox: [x, y, width, height],
+      //   class: "kite",
+      //   score: 0.74644153267145157
+      // }]
+      resizeCanvas(canvasRef, webcamRef);
+      drawOnCanvas(mirrored, predictions, canvasRef.current?.getContext("2d"));
+    }
+  }
+
+  useEffect(() => {
+    interval = setInterval(() => {
+      runPrediction();
+    }, 100); //time for every prediction
+
+    return () => clearInterval(interval); //we clear interval so if the useEffect is called multiple times, we have only one prediction left. If not we will have multiple predictions.
+  }, [webcamRef.current, model, mirrored]); //eslint-disable-line
 
   return (
     <div className="flex h-screen">
@@ -106,6 +151,7 @@ const HomePage = (props: Props) => {
             </Button>
             <Separator className="my-2" />
           </div>
+
           {/* middle */}
           <div className="flex flex-col gap-2">
             <Separator className="my-2" />
@@ -165,6 +211,11 @@ const HomePage = (props: Props) => {
           <RenderFeatureHighlightsSection />
         </div>
       </div>
+      {loading && (
+        <div className="z-50 absolute w-full h-full flex items-center justify-center bg-primary-foreground">
+          Getting started ... <Rings height={50} color="red" />
+        </div>
+      )}
     </div>
   );
 
@@ -270,3 +321,18 @@ const HomePage = (props: Props) => {
 };
 
 export default HomePage;
+
+//standalone function to set canvas size
+function resizeCanvas(
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  webcamRef: React.RefObject<Webcam>
+) {
+  const canvas = canvasRef.current;
+  const video = webcamRef.current?.video;
+
+  if (canvas && video) {
+    const { videoWidth, videoHeight } = video;
+    canvas.width = videoWidth;
+    canvas.height = videoHeight;
+  }
+}
