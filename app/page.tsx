@@ -79,7 +79,7 @@ const HomePage = (props: Props) => {
         };
       }
     }
-  }, [webcamRef]); //to know if webcam is available before we record anything
+  }, [webcamRef, isVideoShown]); //to know if webcam is available before we record anything
 
   function userPromptScreenshot() {
     if (!webcamRef.current) {
@@ -99,6 +99,7 @@ const HomePage = (props: Props) => {
     if (!webcamRef.current) {
       toast("Camera not found. Please refresh.");
     }
+    // console.log(mediaRecorderRef.current?.state);
     if (mediaRecorderRef.current?.state === "recording") {
       mediaRecorderRef.current.requestData();
       mediaRecorderRef.current.stop();
@@ -109,15 +110,22 @@ const HomePage = (props: Props) => {
   }
 
   function startRecording(sound: boolean) {
-    if (webcamRef.current && mediaRecorderRef.current?.state !== "recording") {
-      mediaRecorderRef.current?.start();
-      sound && beep(volume);
-      stopTimeout = setTimeout(() => {
-        if (mediaRecorderRef.current?.state === "recording") {
-          mediaRecorderRef.current.requestData();
-          mediaRecorderRef.current.stop();
-        }
-      }, 30000); //will record for 30 seconds after person detection.
+    try {
+      if (
+        webcamRef.current &&
+        mediaRecorderRef.current?.state !== "recording"
+      ) {
+        mediaRecorderRef.current?.start();
+        sound && beep(volume);
+        stopTimeout = setTimeout(() => {
+          if (mediaRecorderRef.current?.state === "recording") {
+            mediaRecorderRef.current.requestData();
+            mediaRecorderRef.current.stop();
+          }
+        }, 30000);
+      }
+    } catch (error) {
+      console.error("Error starting recording: ", error);
     }
   }
 
