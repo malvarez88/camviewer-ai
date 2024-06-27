@@ -5,7 +5,7 @@ CamViewer.ai is a web application built with Next.js, TypeScript, and Tailwind C
 ## Features
 
 - **AI Detection**: Utilizes models from [TensorFlow](https://www.tensorflow.org) to detect persons and other elements.
-- **Dynamic Styling**: Styled using [ShadeUI](https://ui.shadcn.com/) for a modern and responsive design.
+- **Dynamic Styling**: Styled using [Shadecn](https://ui.shadcn.com/) for a modern and responsive design.
 - **Iconography**: Icons provided by [Radix Icons](https://www.radix-ui.com/icons) and [Lucide Icons](https://lucide.dev/icons).
 - **Recording**: Ability to record video and take screenshots.
 - **Auto-Record**: Automatically starts recording when a person is detected.
