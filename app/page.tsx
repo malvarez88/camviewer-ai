@@ -32,6 +32,9 @@ import "@tensorflow/tfjs-backend-cpu";
 import "@tensorflow/tfjs-backend-webgl";
 import { DetectedObject, ObjectDetection } from "@tensorflow-models/coco-ssd";
 import { drawOnCanvas } from "@/utils/draw";
+import { formatDate } from "@/utils/formatDate";
+import { base64toBlob } from "@/utils/base64toBlob";
+import SocialMediaLinks from "@/components/social-links";
 
 type Props = {};
 
@@ -78,8 +81,18 @@ const HomePage = (props: Props) => {
     }
   }, [webcamRef]); //to know if webcam is available before we record anything
 
-  function userPromptScreenshot(event: any) {
-    throw new Error("Function not implemented.");
+  function userPromptScreenshot() {
+    if (!webcamRef.current) {
+      toast("Camera not found. Please refresh.");
+    } else {
+      const imgSrc = webcamRef.current.getScreenshot();
+      const blob = base64toBlob(imgSrc);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${formatDate(new Date())}.png`;
+      a.click();
+    }
   }
 
   function userPromptRecord() {
@@ -185,7 +198,7 @@ const HomePage = (props: Props) => {
   }, [webcamRef.current, model, mirrored, autoRecordEnabled]); //eslint-disable-line
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen flex-col md:flex-row">
       {/* left - webcam */}
       <div className="relative flex-1">
         {isVideoShown ? (
@@ -204,11 +217,14 @@ const HomePage = (props: Props) => {
           <div className="relative">
             <div className="w-full h-screen flex items-center justify-center gap-4 flex-col">
               <p className="text-sm text-foreground">Enable camera to start</p>
-              <Power
-                size={24}
-                className="cursor-pointer"
-                onClick={() => setIsVideoShown(true)}
-              />
+              <div className="border border-red-600 p-4 rounded-full">
+                <Power
+                  size={24}
+                  className="cursor-pointer"
+                  color="red"
+                  onClick={() => setIsVideoShown(true)}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -225,6 +241,7 @@ const HomePage = (props: Props) => {
               onClick={() => {
                 setMirrored((prev) => !prev);
               }}
+              disabled={!isVideoShown}
             >
               <FlipHorizontal />
             </Button>
@@ -238,6 +255,7 @@ const HomePage = (props: Props) => {
               variant={"outline"}
               onClick={userPromptScreenshot}
               size={"icon"}
+              disabled={!isVideoShown}
             >
               <Camera />
             </Button>
@@ -245,6 +263,7 @@ const HomePage = (props: Props) => {
               variant={isRecording ? "destructive" : "outline"}
               onClick={userPromptRecord}
               size={"icon"}
+              disabled={!isVideoShown}
             >
               <Video />
             </Button>
@@ -253,6 +272,7 @@ const HomePage = (props: Props) => {
               variant={autoRecordEnabled ? "destructive" : "outline"}
               size={"icon"}
               onClick={toggleAutoRecord}
+              disabled={!isVideoShown}
             >
               {autoRecordEnabled ? (
                 <Rings color="white" height={40} width={40} />
@@ -267,14 +287,15 @@ const HomePage = (props: Props) => {
             <Button variant={"outline"} size={"icon"}>
               {isVideoShown ? (
                 <PowerOff
-                  size={24}
+                  size={22}
                   className="cursor-pointer"
                   onClick={() => setIsVideoShown((prev) => !prev)}
                 />
               ) : (
                 <Power
-                  size={24}
+                  size={22}
                   className="cursor-pointer"
+                  color="red"
                   onClick={() => setIsVideoShown((prev) => !prev)}
                 />
               )}
@@ -317,82 +338,114 @@ const HomePage = (props: Props) => {
     return (
       <div className="text-xs text-muted-foreground">
         <ul className="space-y-4">
-          <li>
-            <strong>Dark Mode/Sys Theme 🌗</strong>
-            <p>Toggle between dark mode and system theme.</p>
-            <Button className="my-2 h-6 w-6" variant={"outline"} size={"icon"}>
-              <SunIcon size={14} />
-            </Button>{" "}
-            /{" "}
-            <Button className="my-2 h-6 w-6" variant={"outline"} size={"icon"}>
-              <MoonIcon size={14} />
-            </Button>
+          <li className="flex items-center justify-between p-2">
+            <div className="flex-1 px-2">
+              <strong>Dark Mode/Sys Theme 🌗</strong>
+              <p>Toggle between dark mode and system theme.</p>
+            </div>
+            <div className="flex items-center justify-end gap-1 min-w-20 p-2">
+              <Button
+                className="my-2 h-6 w-6"
+                variant={"outline"}
+                size={"icon"}
+              >
+                <SunIcon size={14} />
+              </Button>
+              /
+              <Button
+                className="my-2 h-6 w-6"
+                variant={"outline"}
+                size={"icon"}
+              >
+                <MoonIcon size={14} />
+              </Button>
+            </div>
           </li>
-          <li>
-            <strong>Horizontal Flip ↔️</strong>
-            <p>Adjust horizontal orientation.</p>
-            <Button
-              className="h-6 w-6 my-2"
-              variant={"outline"}
-              size={"icon"}
-              onClick={() => {
-                setMirrored((prev) => !prev);
-              }}
-            >
-              <FlipHorizontal size={14} />
-            </Button>
-          </li>
-          <Separator />
-          <li>
-            <strong>Take Pictures 📸</strong>
-            <p>Capture snapshots at any moment from the video feed.</p>
-            <Button
-              className="h-6 w-6 my-2"
-              variant={"outline"}
-              size={"icon"}
-              onClick={userPromptScreenshot}
-            >
-              <Camera size={14} />
-            </Button>
-          </li>
-          <li>
-            <strong>Manual Video Recording 📽️</strong>
-            <p>Manually record video clips as needed.</p>
-            <Button
-              className="h-6 w-6 my-2"
-              variant={isRecording ? "destructive" : "outline"}
-              size={"icon"}
-              onClick={userPromptRecord}
-            >
-              <Video size={14} />
-            </Button>
+          <li className="flex items-center justify-between p-2">
+            <div className="flex-1 px-2">
+              <strong>Horizontal Flip ↔️</strong>
+              <p>Adjust horizontal orientation.</p>
+            </div>
+            <div className="flex items-center justify-end gap-1 min-w-20 p-2">
+              <Button
+                className="h-6 w-6 my-2"
+                variant={"outline"}
+                size={"icon"}
+                onClick={() => {
+                  setMirrored((prev) => !prev);
+                }}
+                disabled={!isVideoShown}
+              >
+                <FlipHorizontal size={14} />
+              </Button>
+            </div>
           </li>
           <Separator />
-          <li>
-            <strong>Enable/Disable Auto Record 🚫</strong>
-            <p>
-              Option to enable/disable automatic video recording whenever
-              required.
-            </p>
-            <Button
-              className="h-6 w-6 my-2"
-              variant={autoRecordEnabled ? "destructive" : "outline"}
-              size={"icon"}
-              onClick={toggleAutoRecord}
-            >
-              {autoRecordEnabled ? (
-                <Rings color="white" height={30} />
-              ) : (
-                <PersonStanding size={14} />
-              )}
-            </Button>
+          <li className="flex items-center justify-between p-2">
+            <div className="flex-1 px-2">
+              <strong>Take Pictures 📸</strong>
+              <p>Capture snapshots at any moment from the video feed.</p>
+            </div>
+            <div className="flex items-center gap-1 w-20 p-2 justify-end">
+              <Button
+                className="h-6 w-6 my-2"
+                variant={"outline"}
+                size={"icon"}
+                onClick={userPromptScreenshot}
+                disabled={!isVideoShown}
+              >
+                <Camera size={14} />
+              </Button>
+            </div>
+          </li>
+          <li className="flex items-center justify-between p-2">
+            <div className="flex-1 px-2">
+              <strong>Manual Video Recording 📽️</strong>
+              <p>Manually record video clips as needed.</p>
+            </div>
+            <div className="flex items-center gap-1 w-20 p-2 justify-end">
+              <Button
+                className="h-6 w-6 my-2"
+                variant={isRecording ? "destructive" : "outline"}
+                size={"icon"}
+                onClick={userPromptRecord}
+                disabled={!isVideoShown}
+              >
+                <Video size={14} />
+              </Button>
+            </div>
+          </li>
+          <Separator />
+          <li className="flex items-center justify-between p-2">
+            <div className="flex-1 px-2">
+              <strong>Enable/Disable Auto Record 🚫</strong>
+              <p>
+                Option to enable/disable automatic video recording whenever
+                required.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-1 w-20 p-2">
+              <Button
+                className="h-6 w-6 my-2"
+                variant={autoRecordEnabled ? "destructive" : "outline"}
+                size={"icon"}
+                onClick={toggleAutoRecord}
+                disabled={!isVideoShown}
+              >
+                {autoRecordEnabled ? (
+                  <Rings color="white" height={30} />
+                ) : (
+                  <PersonStanding size={14} />
+                )}
+              </Button>
+            </div>
           </li>
 
-          <li>
+          <li className="px-4 py-2">
             <strong>Volume Slider 🔊</strong>
             <p>Adjust the volume level of the notifications.</p>
           </li>
-          <li>
+          <li className="px-4 py-2">
             <strong>Camera Feed Highlighting 🎨</strong>
             <p>
               Highlights persons in{" "}
@@ -401,9 +454,9 @@ const HomePage = (props: Props) => {
             </p>
           </li>
           <Separator />
-          <li className="space-y-4">
+          <li className="space-y-4 px-4 py-2">
             <strong>Share your thoughts 💬 </strong>
-            {/* <SocialMediaLinks /> */}
+            <SocialMediaLinks />
             <br />
             <br />
             <br />
@@ -416,7 +469,6 @@ const HomePage = (props: Props) => {
 
 export default HomePage;
 
-//standalone functions
 function resizeCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
   webcamRef: React.RefObject<Webcam>
@@ -429,20 +481,4 @@ function resizeCanvas(
     canvas.width = videoWidth;
     canvas.height = videoHeight;
   }
-}
-
-function formatDate(d: Date) {
-  const formattedDate =
-    [
-      (d.getMonth() + 1).toString().padStart(2, "0"),
-      d.getDate().toString().padStart(2, "0"),
-      d.getFullYear(),
-    ].join("-") +
-    " " +
-    [
-      d.getHours().toString().padStart(2, "0"),
-      d.getMinutes().toString().padStart(2, "0"),
-      d.getSeconds().toString().padStart(2, "0"),
-    ].join("-");
-  return formattedDate;
 }
