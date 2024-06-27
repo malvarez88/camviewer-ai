@@ -18,11 +18,11 @@ You can use either `yarn` or `npm` to install and run the project.
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/CamViewer.ai.git
+    git clone https://github.com/malvarez88/camviewer-ai.git
     ```
 2. Navigate to the project directory:
     ```sh
-    cd CamViewer.ai
+    cd camviewer-ai
     ```
 3. Install the dependencies:
     ```sh
@@ -65,7 +65,7 @@ You can use either `yarn` or `npm` to install and run the project.
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [TensorFlow](https://www.tensorflow.org)
-- [ShadeUI](https://ui.shadcn.com/)
+- [ShadecnUI](https://ui.shadcn.com/)
 - [Radix Icons](https://www.radix-ui.com/icons)
 - [Lucide Icons](https://lucide.dev/icons)
 
