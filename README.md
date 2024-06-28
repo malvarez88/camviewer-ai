@@ -3,7 +3,7 @@
 CamViewer.ai is a web application built with Next.js, TypeScript, and Tailwind CSS that allows users to interact with their computer's camera and utilize AI to detect and identify elements on the screen. The application highlights detected persons in red and other objects (like chairs, dogs, etc.) in green using a canvas overlay. 
 
 ## Website
-[CamViwer-AI](https://camviewer-ai.vercel.app/)
+[CamViewer-AI](https://camviewer-ai.vercel.app/)
 
 ## Features
 
